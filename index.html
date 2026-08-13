@@ -9,7 +9,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#08090b">
+    <meta name="theme-color" content="#05070f">
     
     <link rel="apple-touch-icon" href="love.jpg">
     <link rel="icon" href="love.jpg" type="image/jpeg">
@@ -24,15 +24,21 @@
         :root { 
             --hacker-green: #00ff88; 
             --nurse-red: #ff4d6d; 
-            --dark-bg: #08090b; 
-            --glass-bg: rgba(255, 255, 255, 0.03); 
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --glow-green: 0 0 20px rgba(0, 255, 136, 0.2);
-            --glow-red: 0 0 20px rgba(255, 77, 109, 0.2);
+            --dark-bg: #05070f; 
+            --glass-bg: rgba(15, 20, 35, 0.45); 
+            --glass-border: rgba(255, 255, 255, 0.12);
+            --glow-green: 0 0 20px rgba(0, 255, 136, 0.3);
+            --glow-red: 0 0 20px rgba(255, 77, 109, 0.3);
+            --nebula-color-1: rgba(0, 255, 136, 0.12);
+            --nebula-color-2: rgba(255, 77, 109, 0.12);
+        }
+
+        html {
+            scroll-behavior: smooth;
         }
 
         body { 
-            background: radial-gradient(circle at 20% 20%, #1a1c25 0%, var(--dark-bg) 50%);
+            background-color: var(--dark-bg);
             font-family: 'Cairo', sans-serif; 
             color: #e0e0e0; 
             margin: 0; 
@@ -43,22 +49,63 @@
             -webkit-user-select: none;
             -webkit-tap-highlight-color: transparent;
             transition: background 0.5s ease;
+            overflow-x: hidden;
+            position: relative;
         }
 
-        /* أنماط الخلفيات الشخصية المتاحة */
-        body.theme-default { background: radial-gradient(circle at 20% 20%, #1a1c25 0%, var(--dark-bg) 50%); }
-        body.theme-pure-dark { background: #050507; }
-        body.theme-hacker { background: radial-gradient(circle at bottom, #001a08 0%, #020203 80%); }
-        body.theme-nurse { background: radial-gradient(circle at top, #200408 0%, #050203 80%); }
-        body.theme-romantic { background: linear-gradient(135deg, #1f1115 0%, #0a0608 100%); }
+        /* Canvas النجوم والسديم */
+        #starfield-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            pointer-events: none;
+        }
+
+        #nebula-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+            background: radial-gradient(circle at 20% 30%, var(--nebula-color-1) 0%, transparent 60%),
+                        radial-gradient(circle at 80% 70%, var(--nebula-color-2) 0%, transparent 60%);
+            transition: background 1s ease;
+        }
+
+        /* الثيمات وتأثير السديم الكوني المتغير */
+        body.theme-default { 
+            --nebula-color-1: rgba(0, 255, 136, 0.12);
+            --nebula-color-2: rgba(255, 77, 109, 0.12);
+        }
+        body.theme-pure-dark { 
+            --nebula-color-1: rgba(255, 255, 255, 0.03);
+            --nebula-color-2: rgba(255, 255, 255, 0.03);
+        }
+        body.theme-hacker { 
+            --nebula-color-1: rgba(0, 255, 136, 0.25);
+            --nebula-color-2: rgba(0, 150, 80, 0.2);
+        }
+        body.theme-nurse { 
+            --nebula-color-1: rgba(255, 77, 109, 0.25);
+            --nebula-color-2: rgba(180, 20, 60, 0.2);
+        }
+        body.theme-romantic { 
+            --nebula-color-1: rgba(255, 105, 180, 0.2);
+            --nebula-color-2: rgba(138, 43, 226, 0.2);
+        }
 
         ::-webkit-scrollbar { display: none; }
 
         #hacker-screen { 
             position: fixed; inset: 0; background: #000; z-index: 20000; display: block; 
-            transition: transform 0.5s cubic-bezier(0.7, 0, 0.3, 1), opacity 0.4s ease-in;
+            transition: transform 0.6s cubic-bezier(0.7, 0, 0.3, 1), opacity 0.5s ease-in;
         }
-        #matrix-bg { position: absolute; top: 0; left: 0; opacity: 0.3; width: 100%; height: 100%; }
+        #matrix-bg { position: absolute; top: 0; left: 0; opacity: 0.35; width: 100%; height: 100%; }
         #term-box { position: relative; z-index: 20001; padding: 30px; font-family: monospace; color: var(--hacker-green); }
         .t-line { margin-bottom: 8px; font-size: 14px; text-shadow: 0 0 5px var(--hacker-green); }
         #p-bar-box { width: 180px; height: 3px; background: #020; margin: 20px 0; display: none; overflow: hidden; }
@@ -66,7 +113,7 @@
         #auth-area { display: none; align-items: center; margin-top: 15px; }
         #pass-input-term { background: transparent; border: none; color: #fff; font-size: 24px; outline: none; width: 120px; letter-spacing: 5px; font-family: monospace; font-weight: bold; }
 
-        .hacker-exit { transform: scale(0.1); opacity: 0; filter: blur(15px); pointer-events: none; }
+        .hacker-exit { transform: scale(0.05); opacity: 0; filter: blur(20px); pointer-events: none; }
         .hacker-shake { animation: terminalShake 0.15s infinite; filter: hue-rotate(90deg) contrast(1.5); }
 
         @keyframes terminalShake {
@@ -77,45 +124,169 @@
             100% { transform: translate(0px, 0px); }
         }
 
-        .container { max-width: 480px; margin: auto; display: none; padding: 20px; padding-bottom: 100px; }
-        #real-timer { text-align: center; margin-bottom: 20px; }
-        .days-big { font-size: 2.2rem; font-weight: 800; display: block; color: var(--hacker-green); text-shadow: var(--glow-green); }
-        .hms-small { font-size: 1.1rem; color: var(--nurse-red); font-weight: 600; letter-spacing: 1px; }
-        #distance-info { text-align: center; font-size: 0.8rem; color: #888; margin-top: -15px; margin-bottom: 15px; }
-        .tabs { display: flex; background: var(--glass-bg); border-radius: 20px; margin-bottom: 25px; padding: 6px; gap: 8px; border: 1px solid var(--glass-border); overflow-x: auto; scrollbar-width: none; }
-        .tab-btn { flex: 1; padding: 10px; border: none; background: transparent; color: #777; cursor: pointer; border-radius: 15px; font-weight: 800; transition: 0.3s; white-space: nowrap; }
-        .tab-btn.active { background: var(--nurse-red); color: white; box-shadow: var(--glow-red); }
-        .tab-btn.active.y-theme { background: var(--hacker-green); color: #000; box-shadow: var(--glow-green); }
-        .card { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 30px; padding: 22px; margin-bottom: 20px; backdrop-filter: blur(10px); }
-        .m-border { border-right: 5px solid var(--nurse-red); }
-        .y-border { border-right: 5px solid var(--hacker-green); }
-        .section { display: none; }
-        .section.active { display: block; animation: slideUp 0.4s ease-out; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .container { max-width: 480px; margin: auto; display: none; padding: 20px; padding-bottom: 120px; }
         
-        #chat-box, #wish-list, #dynamic-tasks-m, #dynamic-tasks-y, #memories-list, #music-list { height: 320px; overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 25px; padding: 15px; margin-bottom: 15px; display: flex; flex-direction: column; gap: 10px; border: 1px solid var(--glass-border); scroll-behavior: smooth; }
+        /* الهيدر والعدّاد الرئيسي بتصميم الزجاج الفضائي */
+        #real-timer { 
+            text-align: center; 
+            margin-bottom: 20px; 
+            background: rgba(10, 15, 30, 0.55);
+            border: 1px solid var(--glass-border);
+            border-radius: 25px;
+            padding: 18px 10px;
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+        .days-big { 
+            font-size: 2.4rem; 
+            font-weight: 800; 
+            display: block; 
+            color: var(--hacker-green); 
+            text-shadow: var(--glow-green); 
+            letter-spacing: 1px;
+        }
+        .hms-small { 
+            font-size: 1.2rem; 
+            color: var(--nurse-red); 
+            font-weight: 700; 
+            letter-spacing: 2px; 
+            text-shadow: var(--glow-red);
+        }
+        #distance-info { text-align: center; font-size: 0.85rem; color: #aaa; margin-top: -10px; margin-bottom: 20px; text-shadow: 0 0 5px rgba(255,255,255,0.2); }
+        
+        /* شريط التنقل السفلي العائم (Floating Bottom Navigation Capsule) مع السلاسة الممتازة */
+        .bottom-nav-container {
+            position: fixed;
+            bottom: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 30px);
+            max-width: 450px;
+            z-index: 9999;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .tabs { 
+            display: flex; 
+            background: rgba(10, 14, 26, 0.82); 
+            border-radius: 35px; 
+            padding: 6px 8px; 
+            gap: 4px; 
+            border: 1px solid rgba(255, 255, 255, 0.18); 
+            overflow-x: auto; 
+            scrollbar-width: none;
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+            justify-content: space-between;
+        }
+        
+        .tab-btn { 
+            flex: 1; 
+            padding: 10px 8px; 
+            border: none; 
+            background: transparent; 
+            color: #8a94a6; 
+            cursor: pointer; 
+            border-radius: 25px; 
+            font-weight: 800; 
+            font-size: 0.8rem;
+            transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); 
+            white-space: nowrap; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            position: relative;
+        }
+        .tab-btn i {
+            font-size: 1.15rem;
+            transition: transform 0.3s ease;
+        }
+        .tab-btn:active {
+            transform: scale(0.88);
+            filter: brightness(1.2);
+        }
+        .tab-btn.active { 
+            background: var(--nurse-red); 
+            color: white; 
+            box-shadow: var(--glow-red); 
+            transform: translateY(-2px) scale(1.05);
+        }
+        .tab-btn.active i {
+            transform: scale(1.1);
+        }
+        .tab-btn.active.y-theme { 
+            background: var(--hacker-green); 
+            color: #000; 
+            box-shadow: var(--glow-green); 
+        }
+        
+        /* تصميم الكروت الزجاجية (Glassmorphic Cards) */
+        .card { 
+            background: var(--glass-bg); 
+            border: 1px solid var(--glass-border); 
+            border-radius: 28px; 
+            padding: 22px; 
+            margin-bottom: 20px; 
+            backdrop-filter: blur(16px); 
+            -webkit-backdrop-filter: blur(16px);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            opacity: 0; 
+            transform: translateY(20px); 
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        
+        .card.revealed {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .m-border { border-right: 5px solid var(--nurse-red); box-shadow: -3px 0 15px rgba(255, 77, 109, 0.15); }
+        .y-border { border-right: 5px solid var(--hacker-green); box-shadow: -3px 0 15px rgba(0, 255, 136, 0.15); }
+        
+        .section { 
+            display: none; 
+            animation: fadeInTab 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .section.active { display: block; }
+        
+        @keyframes fadeInTab {
+            from { opacity: 0; transform: translateY(10px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        #chat-box, #wish-list, #dynamic-tasks-m, #dynamic-tasks-y, #memories-list, #music-list { 
+            height: 320px; 
+            overflow-y: auto; 
+            background: rgba(5, 8, 15, 0.45); 
+            border-radius: 22px; 
+            padding: 15px; 
+            margin-bottom: 15px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 10px; 
+            border: 1px solid var(--glass-border); 
+            scroll-behavior: smooth; 
+        }
         #memories-list { height: 400px; }
         .msg { padding: 10px 15px; border-radius: 18px; max-width: 85%; font-size: 0.95rem; line-height: 1.4; word-wrap: break-word; position: relative; }
-        .msg.يوسف { align-self: flex-end; background: #00331a; color: var(--hacker-green); border-bottom-right-radius: 4px; }
-        .msg.مريم { align-self: flex-start; background: #330011; color: var(--nurse-red); border-bottom-left-radius: 4px; }
+        .msg.يوسف { align-self: flex-end; background: rgba(0, 51, 26, 0.85); color: var(--hacker-green); border-bottom-right-radius: 4px; border: 1px solid rgba(0, 255, 136, 0.2); }
+        .msg.مريم { align-self: flex-start; background: rgba(51, 0, 17, 0.85); color: var(--nurse-red); border-bottom-left-radius: 4px; border: 1px solid rgba(255, 77, 109, 0.2); }
         
         .input-group { display: flex; gap: 8px; margin-top: 10px; }
-        .input-group input { flex: 1; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); color: white; padding: 12px 18px; border-radius: 15px; outline: none; font-family: 'Cairo'; }
+        .input-group input { flex: 1; background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); color: white; padding: 12px 18px; border-radius: 15px; outline: none; font-family: 'Cairo'; }
         
         #moto-btn { 
             width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; 
             border: none; background: var(--hacker-green) !important; box-shadow: 0 0 15px var(--hacker-green); cursor: pointer; 
+            transition: transform 0.2s;
         }
+        #moto-btn:active { transform: scale(0.9); }
         #moto-btn i { color: #000 !important; font-size: 1.4rem; }
         @keyframes motoLaunch { 0% { transform: translateX(0); opacity: 1; } 40% { transform: translateX(15px) scale(1.1); opacity: 1; } 100% { transform: translateX(-60px); opacity: 0; } }
         .moto-active { animation: motoLaunch 0.4s ease-in-out; }
-        
-        .nudge-btn { position: fixed; bottom: 20px; left: 20px; width: 65px; height: 65px; border-radius: 50%; border: none; background: var(--nurse-red); color: white; font-size: 1.5rem; cursor: pointer; z-index: 999; box-shadow: var(--glow-red); transition: transform 0.2s; }
-        .heart-pulse { animation: syncPulse 0.6s infinite !important; background: #ff0000 !important; box-shadow: 0 0 30px #ff0000 !important; }
-        
-        @keyframes syncPulse { 0% { transform: scale(1); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
-        @keyframes heartbeat { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
-        .nudge-btn:not(.heart-pulse) { animation: heartbeat 1.5s infinite; }
 
         #nudge-msg { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: white; color: #000; padding: 15px 30px; border-radius: 50px; font-weight: 800; transition: 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 10001; }
 
@@ -127,6 +298,851 @@
         .reactions-picker { display: flex; justify-content: space-around; padding: 10px; background: rgba(255,255,255,0.05); border-bottom: 1px solid #333; }
         .react-btn { cursor: pointer; font-size: 1.2rem; transition: 0.2s; }
         .react-btn:hover { transform: scale(1.3); }
+        
+        .menu-item {
+            padding: 12px 20px; color: white; font-size: 0.9rem; cursor: pointer;
+            transition: 0.2s; display: flex; align-items: center; gap: 10px;
+        }
+        .menu-item:hover { background: rgba(0, 255, 136, 0.1); color: var(--hacker-green); }
+        .menu-item.delete-item { color: #ff4d6d; }
+        .menu-item.delete-item:hover { background: rgba(255, 77, 109, 0.1); }
+
+        .reaction-container { position: absolute; bottom: -10px; background: #1a1c25; border: 1px solid var(--glass-border); border-radius: 10px; padding: 1px 5px; font-size: 0.75rem; z-index: 5; animation: popReact 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .msg.يوسف .reaction-container { right: 10px; }
+        .msg.مريم .reaction-container { left: 10px; }
+        @keyframes popReact { from { transform: scale(0); } to { transform: scale(1); } }
+        
+        .reply-content { background: rgba(255,255,255,0.1); border-left: 3px solid var(--hacker-green); padding: 5px 8px; border-radius: 5px; margin-bottom: 5px; font-size: 0.75rem; opacity: 0.8; cursor: pointer; }
+        
+        #reply-preview { display: none; background: #111; padding: 10px; border-top: 2px solid var(--hacker-green); color: #ccc; font-size: 0.8rem; position: relative; }
+        #typing-status { font-size: 0.75rem; color: var(--hacker-green); margin-bottom: 5px; height: 15px; opacity: 0.8; font-style: italic; padding-right: 10px; }
+        .seen-status { font-size: 0.65rem; display: block; text-align: left; opacity: 0.6; margin-top: 2px; }
+        .msg.مريم .seen-status { text-align: right; }
+
+        .task-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; background: rgba(255,255,255,0.04); border-radius: 15px; border: 1px solid var(--glass-border); transition: 0.3s; }
+        .task-item.completed { opacity: 0.5; background: rgba(0, 255, 136, 0.03); }
+        .task-item.completed span { text-decoration: line-through; color: #888; }
+        .task-item i { cursor: pointer; font-size: 1.2rem; transition: 0.2s; }
+        .task-item i:hover { transform: scale(1.1); }
+        
+        .memory-card { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 25px; padding: 15px; display: flex; flex-direction: column; gap: 10px; position: relative; }
+        .memory-card img { width: 100%; border-radius: 20px; max-height: 250px; object-fit: cover; }
+        .memory-meta { font-size: 0.75rem; color: #777; display: flex; justify-content: space-between; }
+        .memory-delete { position: absolute; top: 15px; left: 15px; background: rgba(0,0,0,0.6); border: none; color: var(--nurse-red); width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+
+        .music-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; background: rgba(255,255,255,0.04); border-radius: 15px; border: 1px solid var(--glass-border); transition: 0.3s; }
+        .music-item .music-info { display: flex; align-items: center; gap: 12px; cursor: pointer; flex: 1; }
+        .music-item i.fa-play-circle { font-size: 1.4rem; color: var(--hacker-green); }
+        .music-item i.fa-trash-alt { color: var(--nurse-red); cursor: pointer; transition: 0.2s; }
+        .music-item i.fa-trash-alt:hover { transform: scale(1.2); }
+
+        .theme-picker-container { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 20px; background: var(--glass-bg); padding: 10px; border-radius: 20px; border: 1px solid var(--glass-border); }
+        .theme-dot { width: 24px; height: 24px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
+        .theme-dot.active { border-color: #fff; transform: scale(1.15); }
+        .td-default { background: linear-gradient(to bottom right, #1a1c25, #08090b); }
+        .td-pure-dark { background: #050507; border: 1px solid #333; }
+        .td-hacker { background: #001a08; }
+        .td-nurse { background: #200408; }
+        .td-romantic { background: #1f1115; }
+    </style>
+</head>
+<body class="theme-default">
+
+<!-- خلفية السماء الكونية والنجوم -->
+<canvas id="starfield-canvas"></canvas>
+<div id="nebula-overlay"></div>
+
+<audio id="nudge-sound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
+<div id="nudge-msg">❤️ بيفكر فيكِ حالاً!</div>
+
+<div id="hacker-screen">
+    <canvas id="matrix-bg"></canvas>
+    <div id="term-box">
+        <div id="log-c"></div>
+        <div id="p-bar-box"><div id="p-bar"></div></div>
+        <div id="auth-area">
+            <span>> PASSWORD_REQUIRED:</span><br>
+            <input type="password" id="pass-input-term" maxlength="4" placeholder="****" inputmode="numeric" autocomplete="off">
+        </div>
+    </div>
+</div>
+
+<div id="custom-menu">
+    <div class="reactions-picker">
+        <span class="react-btn" onclick="addReact('❤️')">❤️</span>
+        <span class="react-btn" onclick="addReact('😹')">😹</span>
+        <span class="react-btn" onclick="addReact('💋')">💋</span>
+        <span class="react-btn" onclick="addReact('🎀')">🎀</span>
+    </div>
+    <div class="menu-item" onclick="startReply()"><i class="fas fa-reply"></i> رد</div>
+    <div class="menu-item" id="menu-edit"><i class="fas fa-edit"></i> تعديل</div>
+    <div class="menu-item delete-item" id="menu-delete"><i class="fas fa-trash"></i> حذف</div>
+</div>
+
+<div class="container" id="main-content">
+    <div id="real-timer">
+        <span class="days-big" id="days-val">0 Days</span>
+        <span class="hms-small" id="hms-val">00:00:00</span>
+    </div>
+    <div id="distance-info">📍 جاري تحديد المسافة...</div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+        <div style="text-align: center;">
+            <select id="user-role" onchange="syncRole()" style="background:var(--glass-bg); color:white; border:1px solid var(--glass-border); padding:10px; border-radius:15px; font-family:'Cairo'; width: 100%;">
+                <option value="يوسف">يوسف 🧑‍💻</option>
+                <option value="مريم">مريم 🩺</option>
+            </select>
+        </div>
+        
+        <div class="theme-picker-container">
+            <span style="font-size:0.75rem; color:#888; margin-left: auto;">خلفيتك الخاصة:</span>
+            <div class="theme-dot td-default active" onclick="changePersonalTheme('theme-default', this)" title="الافتراضي"></div>
+            <div class="theme-dot td-pure-dark" onclick="changePersonalTheme('theme-pure-dark', this)" title="أسود داكن"></div>
+            <div class="theme-dot td-hacker" onclick="changePersonalTheme('theme-hacker', this)" title="هكر أخضر"></div>
+            <div class="theme-dot td-nurse" onclick="changePersonalTheme('theme-nurse', this)" title="طبي أحمر"></div>
+            <div class="theme-dot td-romantic" onclick="changePersonalTheme('theme-romantic', this)" title="رومانسي دافئ"></div>
+        </div>
+    </div>
+
+    <div id="mood" class="section active">
+        <div class="card m-border"><h3 style="color:var(--nurse-red); margin:0; font-size:0.8rem;">مود مريم 🩺</h3><p id="m-mood-display">...</p><div id="m-mood-ctrl" class="input-group" style="display:none"><input type="text" id="m-mood-text" placeholder="مودِك دلوقتي Oz"><button class="tab-btn active" onclick="updateMood('m')">تحديث</button></div></div>
+        <div class="card y-border"><h3 style="color:var(--hacker-green); margin:0; font-size:0.8rem;">مود يوسف 🧑‍💻</h3><p id="y-mood-display">...</p><div id="y-mood-ctrl" class="input-group" style="display:none"><input type="text" id="y-mood-text" placeholder="مودك دلوقتي؟"><button class="tab-btn active y-theme" onclick="updateMood('y')">تحديث</button></div></div>
+    </div>
+    
+    <div id="tasks" class="section">
+        <div class="card m-border">
+            <b style="color:var(--nurse-red);">قائمة مهام مريومهع 🩺:</b>
+            <div id="dynamic-tasks-m" style="height:160px; margin-top:10px;"></div>
+            <div id="y-to-m-ctrl" class="input-group" style="display:none">
+                <input type="text" id="input-to-m" placeholder="أعطها مهمة جديدة...">
+                <button class="tab-btn active y-theme" onclick="saveTask('m')">إرسال</button>
+            </div>
+        </div>
+        <div class="card y-border">
+            <b style="color:var(--hacker-green);">قائمة مهام سفسوفهع 🧑‍💻:</b>
+            <div id="dynamic-tasks-y" style="height:160px; margin-top:10px;"></div>
+            <div id="m-to-y-ctrl" class="input-group" style="display:none">
+                <input type="text" id="input-to-y" placeholder="أعطه مهمة جديدة...">
+                <button class="tab-btn active" onclick="saveTask('y')">إرسال</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="wishes" class="section"><div class="card"><h3 style="color:var(--nurse-red); margin-top:0;">صندوق الأمنيات ✨</h3><div id="wish-list"></div><div class="input-group"><input type="text" id="wish-in" placeholder="أمنية جديدة..."><button class="tab-btn active y-theme" onclick="addWish()">إضافة</button></div></div></div>
+    
+    <div id="memories" class="section">
+        <div class="card">
+            <h3 style="color:var(--hacker-green); margin-top:0;">صندوق ذكرياتنا الدافئة 📸</h3>
+            <div id="memories-list"></div>
+            <div class="input-group" style="flex-direction: column; gap: 10px;">
+                <label for="memory-file" style="display: flex; align-items: center; justify-content: center; gap: 10px; background: rgba(0, 255, 136, 0.05); border: 1px dashed var(--hacker-green); color: var(--hacker-green); padding: 12px; border-radius: 15px; cursor: pointer; font-weight: bold; width: 100%; box-sizing: border-box;">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <span id="file-label">اختر صورة من الموبايل...</span>
+                </label>
+                <input type="file" id="memory-file" accept="image/*" style="display: none;" onchange="handleFileSelect(this)">
+                
+                <div style="display:flex; gap:8px; width:100%;">
+                    <input type="text" id="memory-text" placeholder="اكتب كلمة للذكرى...">
+                    <button class="tab-btn active y-theme" onclick="addMemory()" style="flex:none; width:80px;">حفظ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="music" class="section">
+        <div class="card">
+            <h3 style="color:var(--hacker-green); margin-top:0;">صندوق الموسيقى المشترك 🎵</h3>
+            <div id="music-list"></div>
+            <div class="input-group" style="flex-direction: column; gap: 8px;">
+                <input type="text" id="music-name" placeholder="اسم الأغنية أو التراك...">
+                <div style="display:flex; gap:8px; width:100%;">
+                    <input type="text" id="music-link" placeholder="ضع رابط الأغنية (يوتيوب / ساوند)...">
+                    <button class="tab-btn active y-theme" onclick="addMusicTrack()" style="flex:none; width:80px;">إضافة</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="questions" class="section"><div class="card" style="text-align: center;"><h3 id="daily-q-text" style="color:var(--hacker-green); margin-bottom:15px; min-height: 60px;">...</h3><textarea id="ans-in" style="width:100%; height:100px; background:rgba(0,0,0,0.3); border:1px solid var(--glass-border); color:white; border-radius:15px; padding:15px; font-family:'Cairo'; resize:none;" placeholder="إجابتك السرية..."></textarea><button class="tab-btn active y-theme" style="margin-top:10px; width:100%;" onclick="saveAns()">حفظ الإجابة</button></div></div>
+    
+    <div id="chat" class="section">
+        <div id="typing-status"></div>
+        <div id="chat-box"></div>
+        <div id="reply-preview">
+            <div id="reply-preview-text" style="border-right: 3px solid var(--hacker-green); padding-right: 10px;"></div>
+            <i class="fas fa-times" onclick="cancelReply()" style="position:absolute; left:15px; top:10px; color:var(--nurse-red);"></i>
+        </div>
+        <div class="input-group" style="background:rgba(255,255,255,0.08); padding:8px; border-radius:50px; border:1px solid var(--hacker-green); align-items:center;">
+            <input type="text" id="msg-input" placeholder="اكتب شيئاً..." style="background:none; border:none; padding-left:15px; flex:1; color: white;" onkeypress="if(event.key==='Enter') sendMsg()">
+            <button id="moto-btn" onclick="sendMsg()"><i class="fas fa-motorcycle"></i></button>
+        </div>
+    </div>
+</div>
+
+<!-- القائمة السفلية العائمة في الأسفل -->
+<div class="bottom-nav-container">
+    <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('mood', this)"><i class="fas fa-mask"></i>المود</button>
+        <button class="tab-btn" onclick="showTab('tasks', this)"><i class="fas fa-tasks"></i>المهام</button>
+        <button class="tab-btn" onclick="showTab('wishes', this)"><i class="fas fa-magic"></i>الأمنيات</button>
+        <button class="tab-btn" onclick="showTab('memories', this)"><i class="fas fa-camera-retro"></i>الذكريات</button>
+        <button class="tab-btn" onclick="showTab('music', this)"><i class="fas fa-music"></i>الموسيقى</button>
+        <button class="tab-btn" onclick="showTab('questions', this)"><i class="fas fa-question-circle"></i>سؤال</button>
+        <button class="tab-btn" onclick="showTab('chat', this)"><i class="fas fa-comments"></i>الشات</button>
+    </div>
+</div>
+
+<script>
+    // --- سكريبت خلفية السماء والنجوم والشهب الكونية التفاعلية ---
+    const starCanvas = document.getElementById('starfield-canvas');
+    const starCtx = starCanvas.getContext('2d');
+    let stars = [];
+    let shootingStars = [];
+
+    function resizeStarCanvas() {
+        starCanvas.width = window.innerWidth;
+        starCanvas.height = window.innerHeight;
+        initStars();
+    }
+
+    function initStars() {
+        stars = [];
+        // زيادة كثافة النجوم (قسمة على 1200 بدلاً من 3000 لزيادة العدد لأكثر من الضعف)
+        const count = Math.floor((starCanvas.width * starCanvas.height) / 1200);
+        for (let i = 0; i < count; i++) {
+            stars.push({
+                x: Math.random() * starCanvas.width,
+                y: Math.random() * starCanvas.height,
+                size: Math.random() * 1.8 + 0.2,
+                alpha: Math.random(),
+                speed: Math.random() * 0.02 + 0.005,
+                dir: Math.random() > 0.5 ? 1 : -1
+            });
+        }
+    }
+
+    function addShootingStar() {
+        // زيادة احتمالية ظهور الشهب الكونية المضيئة
+        if (Math.random() < 0.03 && shootingStars.length < 5) {
+            shootingStars.push({
+                x: Math.random() * starCanvas.width,
+                y: Math.random() * (starCanvas.height / 2),
+                len: Math.random() * 90 + 50,
+                speed: Math.random() * 12 + 7,
+                size: Math.random() * 1.8 + 0.6,
+                alpha: 1
+            });
+        }
+    }
+
+    function drawStarfield() {
+        starCtx.clearRect(0, 0, starCanvas.width, starCanvas.height);
+        
+        // رسم النجوم بلمعان متناغم
+        stars.forEach(star => {
+            star.alpha += star.speed * star.dir;
+            if (star.alpha >= 1 || star.alpha <= 0.2) star.dir *= -1;
+
+            starCtx.fillStyle = `rgba(255, 255, 255, ${star.alpha})`;
+            starCtx.beginPath();
+            starCtx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+            starCtx.fill();
+        });
+
+        // رسم الشهب السريعة
+        shootingStars.forEach((sStar, index) => {
+            sStar.x -= sStar.speed;
+            sStar.y += sStar.speed * 0.7;
+            sStar.alpha -= 0.015;
+
+            if (sStar.alpha <= 0) {
+                shootingStars.splice(index, 1);
+            } else {
+                starCtx.strokeStyle = `rgba(255, 255, 255, ${sStar.alpha})`;
+                starCtx.lineWidth = sStar.size;
+                starCtx.beginPath();
+                starCtx.moveTo(sStar.x, sStar.y);
+                starCtx.lineTo(sStar.x + sStar.len, sStar.y - sStar.len * 0.7);
+                starCtx.stroke();
+            }
+        });
+
+        addShootingStar();
+        requestAnimationFrame(drawStarfield);
+    }
+
+    window.addEventListener('resize', resizeStarCanvas);
+    resizeStarCanvas();
+    drawStarfield();
+
+    // --- أكواد Firebase والتطبيق الأصلية ---
+    const firebaseConfig = { databaseURL: "https://youssef-mariam-default-rtdb.firebaseio.com/" };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    function changePersonalTheme(themeClassName, dotElement) {
+        triggerVibrate(30);
+        document.body.classList.remove('theme-default', 'theme-pure-dark', 'theme-hacker', 'theme-nurse', 'theme-romantic');
+        document.body.classList.add(themeClassName);
+        localStorage.setItem('myPersonalTheme', themeClassName);
+        document.querySelectorAll('.theme-dot').forEach(dot => dot.classList.remove('active'));
+        if (dotElement) {
+            dotElement.classList.add('active');
+        } else {
+            const targetDot = document.querySelector(`.td-${themeClassName.replace('theme-', '')}`);
+            if (targetDot) targetDot.classList.add('active');
+        }
+    }
+
+    function loadSavedTheme() {
+        const savedTheme = localStorage.getItem('myPersonalTheme');
+        if (savedTheme) {
+            changePersonalTheme(savedTheme, null);
+        }
+    }
+
+    function initNotifications() {
+        if ("Notification" in window) {
+            Notification.requestPermission();
+        }
+    }
+
+    function pushNotify(title, body) {
+        if ("Notification" in window && Notification.permission === "granted") {
+            new Notification(title, { body: body, icon: "love.jpg" });
+        }
+    }
+
+    let pulseInterval;
+    function startPulse() {
+        const role = document.getElementById('user-role').value;
+        db.ref('heart_sync').set({ active: true, sender: role, time: Date.now() });
+        triggerVibrate([50]);
+        pulseInterval = setInterval(() => triggerVibrate([30]), 600);
+    }
+
+    function stopPulse() {
+        clearInterval(pulseInterval);
+        db.ref('heart_sync').set({ active: false, time: Date.now() });
+    }
+
+    db.ref('heart_sync').on('value', snap => {
+        const d = snap.val();
+        if (d && d.active) {
+            if (d.sender !== document.getElementById('user-role').value) {
+                triggerVibrate([100, 50, 100]);
+            }
+        }
+    });
+
+    const logContainer = document.getElementById('log-c');
+    const termLines = ["Initializing System...", "Loading Neural Network...", "Bypassing Firewall...", "Access Granted."];
+    let currentLine = 0;
+    function runTerminal() {
+        if (currentLine < termLines.length) {
+            let p = document.createElement('div'); p.className = 't-line'; p.innerText = "> " + termLines[currentLine];
+            logContainer.appendChild(p); currentLine++; setTimeout(runTerminal, 300);
+        } else {
+            document.getElementById('p-bar-box').style.display = 'block';
+            let progress = 0; let interval = setInterval(() => {
+                progress += 10; document.getElementById('p-bar').style.width = progress + '%';
+                if (progress >= 100) { clearInterval(interval); document.getElementById('auth-area').style.display = 'block'; document.getElementById('pass-input-term').focus(); }
+            }, 50);
+        }
+    }
+    const canvas = document.getElementById('matrix-bg'); const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+    const columns = Math.floor(canvas.width / 15); const drops = Array(columns).fill(1);
+    function drawMatrix() {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.05)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#0f8'; ctx.font = '15px monospace';
+        drops.forEach((y, i) => { ctx.fillText(Math.floor(Math.random()*10), i*15, y*15); if(y*15 > canvas.height && Math.random() > 0.975) drops[i] = 0; drops[i]++; });
+    }
+    setInterval(drawMatrix, 40);
+
+    document.getElementById('pass-input-term').addEventListener('input', (e) => {
+        let val = e.target.value.trim().replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d));
+        if (val === "1212") {
+            const screen = document.getElementById('hacker-screen'); triggerVibrate([100, 50, 100]);
+            screen.classList.add('hacker-shake');
+            initNotifications();
+            setTimeout(() => {
+                screen.classList.remove('hacker-shake'); screen.classList.add('hacker-exit');
+                setTimeout(() => { 
+                    screen.style.display = 'none'; 
+                    document.getElementById('main-content').style.display = 'block'; 
+                    const savedRole = localStorage.getItem('myUserRole');
+                    if(savedRole) document.getElementById('user-role').value = savedRole;
+                    syncRole(); loadSavedTheme(); updateDailyQuestion(); startLocationTracking(); 
+                    initScrollReveal();
+                }, 400);
+            }, 300);
+        }
+    });
+
+    let lastShake = 0;
+    if (window.DeviceMotionEvent) {
+        window.addEventListener('devicemotion', (e) => {
+            let acc = e.accelerationIncludingGravity;
+            if(acc) {
+                let totalAcc = Math.abs(acc.x) + Math.abs(acc.y) + Math.abs(acc.z);
+                if (totalAcc > 25 && (Date.now() - lastShake > 2000)) {
+                    lastShake = Date.now();
+                    const role = document.getElementById('user-role').value;
+                    db.ref('remote_shake').set({ s: role, t: Date.now() });
+                }
+            }
+        });
+    }
+
+    db.ref('remote_shake').on('value', snap => {
+        const d = snap.val(); const myRole = document.getElementById('user-role').value;
+        if(d && d.s !== myRole && (Date.now() - d.t < 2000)) {
+            triggerVibrate([300, 100, 300, 100, 400]);
+            const box = document.getElementById('nudge-msg'); box.innerText = d.s + " بيهز الموبايل! 📱🔥"; box.style.top = "20px";
+            setTimeout(() => box.style.top = "-100px", 3000);
+        }
+    });
+
+    window.onload = runTerminal;
+    function triggerVibrate(p = 60) { if (navigator.vibrate) navigator.vibrate(p); }
+
+    function startLocationTracking() {
+        if (navigator.geolocation) {
+            navigator.geolocation.watchPosition(pos => {
+                const role = document.getElementById('user-role').value;
+                db.ref('locations/' + role).set({ lat: pos.coords.latitude, lon: pos.coords.longitude, t: Date.now() });
+            }, null, { enableHighAccuracy: true });
+        }
+    }
+
+    db.ref('locations').on('value', snap => {
+        const locs = snap.val(); if (locs && locs.يوسف && locs.مريم) {
+            const dist = calculateDistance(locs.يوسف.lat, locs.يوسف.lon, locs.مريم.lat, locs.مريم.lon);
+            document.getElementById('distance-info').innerText = `📍 المسافة بينكما: ${dist.toFixed(2)} كم`;
+        }
+    });
+
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371; const dLat = (lat2 - lat1) * Math.PI / 180; const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    }
+
+    function syncRole() {
+        const role = document.getElementById('user-role').value;
+        localStorage.setItem('myUserRole', role);
+
+        document.getElementById('m-mood-ctrl').style.display = (role === "مريم") ? "flex" : "none";
+        document.getElementById('y-mood-ctrl').style.display = (role === "يوسف") ? "flex" : "none";
+        document.getElementById('y-to-m-ctrl').style.display = (role === "يوسف") ? "flex" : "none";
+        document.getElementById('m-to-y-ctrl').style.display = (role === "مريم") ? "flex" : "none";
+        
+        document.querySelectorAll('.msg').forEach(msgDiv => {
+            const sender = msgDiv.getAttribute('data-sender');
+            msgDiv.className = `msg ${sender === role ? 'يوسف' : 'مريم'}`;
+        });
+
+        const activeTab = document.querySelector('.tab-btn.active');
+        if(activeTab) { if(role === "يوسف") activeTab.classList.add('y-theme'); else activeTab.classList.remove('y-theme'); }
+
+        if(document.getElementById('chat').classList.contains('active')) updateSeenStatus();
+    }
+
+    function showTab(id, btn) {
+        triggerVibrate(); document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active', 'y-theme'));
+        document.getElementById(id).classList.add('active'); btn.classList.add('active'); syncRole();
+        
+        setTimeout(revealOnScroll, 50);
+
+        if(id === 'chat') { 
+            const cb = document.getElementById('chat-box'); 
+            setTimeout(() => cb.scrollTop = cb.scrollHeight, 100); 
+            updateSeenStatus();
+        }
+    }
+
+    const start = new Date("2025-04-16T00:00:00");
+    setInterval(() => {
+        const now = new Date();
+        const diff = now - start; 
+        const d = Math.floor(diff / (1000 * 60 * 60 * 24)); 
+        const h = String(Math.floor((diff/3600000)%24)).padStart(2,'0');
+        const m = String(Math.floor((diff/60000)%60)).padStart(2,'0');
+        const s = String(Math.floor((diff/1000)%60)).padStart(2,'0');
+        document.getElementById('days-val').innerText = d + " Days"; document.getElementById('hms-val').innerText = `${h}:${m}:${s}`;
+    }, 1000);
+
+    function sendNudge() {
+        triggerVibrate([100, 50, 100]); const role = document.getElementById('user-role').value;
+        db.ref('nudge').set({ s: role, t: Date.now() });
+    }
+
+    db.ref('nudge').on('value', snap => {
+        const d = snap.val(); if(d && (Date.now() - d.t < 5000)) {
+            const myRole = document.getElementById('user-role').value;
+            if(d.s !== myRole) pushNotify("Nudge!", d.s + " بيفكر فيكِ دلوقتي ❤️");
+            const box = document.getElementById('nudge-msg'); const sound = document.getElementById('nudge-sound');
+            box.innerText = d.s + " بيفكر فيكِ حالاً! ❤️"; box.style.top = "20px";
+            try { sound.play(); triggerVibrate([200, 100, 200]); } catch(e) {}
+            setTimeout(() => box.style.top = "-100px", 4000);
+        }
+    });
+
+    function updateMood(u) {
+        triggerVibrate(); const t = document.getElementById(u + '-mood-text').value;
+        if(t.trim()) db.ref('moods/' + u).set(t);
+    }
+
+    db.ref('moods').on('value', s => {
+        const v = s.val() || {y: '...', m: '...'};
+        document.getElementById('y-mood-display').innerText = v.y; document.getElementById('m-mood-display').innerText = v.m;
+    });
+
+    function saveTask(target) {
+        triggerVibrate(); 
+        const inp = target === 'm' ? 'input-to-m' : 'input-to-y';
+        const val = document.getElementById(inp).value; 
+        if(val.trim()) {
+            db.ref('dynamic_tasks/' + target).push().set({ text: val, done: false });
+            document.getElementById(inp).value = "";
+        }
+    }
+
+    function listenToTasks(target, elementId) {
+        db.ref('dynamic_tasks/' + target).on('value', snap => {
+            const container = document.getElementById(elementId);
+            container.innerHTML = "";
+            snap.forEach(child => {
+                const item = child.val();
+                const div = document.createElement('div');
+                div.className = `task-item ${item.done ? 'completed' : ''}`;
+                div.innerHTML = `
+                    <span>${item.text}</span>
+                    <i class="fas ${item.done ? 'fa-check-circle' : 'fa-circle'}" 
+                       onclick="toggleTask('${target}', '${child.key}', ${item.done})" 
+                       style="color: ${item.done ? 'var(--hacker-green)' : '#777'}"></i>
+                `;
+                container.appendChild(div);
+            });
+        });
+    }
+    listenToTasks('m', 'dynamic-tasks-m');
+    listenToTasks('y', 'dynamic-tasks-y');
+
+    function toggleTask(target, key, status) {
+        triggerVibrate(); 
+        if(!status) confetti({ particleCount: 80, spread: 60 });
+        db.ref(`dynamic_tasks/${target}/${key}`).update({ done: !status });
+    }
+
+    function addWish() {
+        triggerVibrate(); const t = document.getElementById('wish-in').value;
+        if(t.trim()) db.ref('wishes').push({ t: t, d: false });
+    }
+
+    db.ref('wishes').on('value', s => {
+        const list = document.getElementById('wish-list'); list.innerHTML = "";
+        s.forEach(c => {
+            const d = c.val(); const div = document.createElement('div');
+            div.style.cssText = "display:flex; justify-content:space-between; padding:12px; background:rgba(255,255,255,0.05); border-radius:15px; margin-bottom:5px;";
+            div.innerHTML = `<span>${d.t}</span> <i class="fas ${d.d ? 'fa-check-circle' : 'fa-circle'}" onclick="toggleWish('${c.key}', ${d.d})"></i>`;
+            list.appendChild(div);
+        });
+    });
+
+    function toggleWish(k, st) {
+        triggerVibrate(); if(!st) confetti({ particleCount: 100, spread: 70 });
+        db.ref('wishes/'+k).update({ d: !st });
+    }
+
+    let base64ImageString = "";
+
+    function handleFileSelect(input) {
+        const file = input.files[0];
+        if (file) {
+            if (file.size > 1024 * 1024) {
+                alert("الصورة كبيرة جداً، يرجى اختيار صورة بحجم أصغر من 1 ميجابايت.");
+                input.value = "";
+                document.getElementById('file-label').innerText = "اختر صورة من الموبايل...";
+                return;
+            }
+            
+            document.getElementById('file-label').innerText = "📸 تم اختيار: " + file.name.substring(0, 15) + "...";
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                base64ImageString = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function addMemory() {
+        triggerVibrate();
+        const text = document.getElementById('memory-text').value.trim();
+        const role = document.getElementById('user-role').value;
+        
+        if (!base64ImageString) {
+            alert("من فضلك اختر صورة أولاً!");
+            return;
+        }
+        if (!text) {
+            alert("من فضلك اكتب كلمة للذكرى!");
+            return;
+        }
+
+        db.ref('memories').push().set({ 
+            img: base64ImageString, 
+            txt: text, 
+            sender: role, 
+            time: Date.now() 
+        }).then(() => {
+            base64ImageString = "";
+            document.getElementById('memory-file').value = "";
+            document.getElementById('memory-text').value = "";
+            document.getElementById('file-label').innerText = "اختر صورة من الموبايل...";
+        }).catch(err => {
+            console.error(err);
+            alert("حدث خطأ أثناء الحفظ.");
+        });
+    }
+
+    db.ref('memories').on('value', snap => {
+        const list = document.getElementById('memories-list');
+        list.innerHTML = "";
+        const myRole = document.getElementById('user-role').value;
+        snap.forEach(child => {
+            const data = child.val();
+            const dateStr = new Date(data.time).toLocaleDateString('ar-EG', {month:'short', day:'numeric'});
+            const div = document.createElement('div');
+            div.className = "memory-card";
+            div.innerHTML = `
+                <img src="${data.img}" onerror="this.src='love.jpg'">
+                <p style="margin:5px 0; font-weight:600; font-size:0.95rem;">${data.txt}</p>
+                <div class="memory-meta"><span>بواسطة: ${data.sender}</span> <span>${dateStr}</span></div>
+                ${data.sender === myRole ? `<button class="memory-delete" onclick="deleteMemory('${child.key}')"><i class="fas fa-trash"></i></button>` : ''}
+            `;
+            list.appendChild(div);
+        });
+        list.scrollTop = list.scrollHeight;
+    });
+
+    function deleteMemory(key) { if(confirm("هل تريد حذف هذه الذكرى نهائياً؟")) { triggerVibrate(); db.ref('memories/'+key).remove(); } }
+
+    function addMusicTrack() {
+        triggerVibrate();
+        const name = document.getElementById('music-name').value.trim();
+        let link = document.getElementById('music-link').value.trim();
+        const role = document.getElementById('user-role').value;
+
+        if(!name || !link) {
+            alert("من فضلك أدخل اسم الأغنية والرابط!");
+            return;
+        }
+        if(!link.startsWith('http://') && !link.startsWith('https://')) {
+            link = 'https://' + link;
+        }
+
+        db.ref('music_box').push().set({
+            name: name,
+            link: link,
+            sender: role,
+            time: Date.now()
+        }).then(() => {
+            document.getElementById('music-name').value = "";
+            document.getElementById('music-link').value = "";
+        });
+    }
+
+    db.ref('music_box').on('value', snap => {
+        const list = document.getElementById('music-list');
+        list.innerHTML = "";
+        snap.forEach(child => {
+            const data = child.val();
+            const div = document.createElement('div');
+            div.className = "music-item";
+            div.innerHTML = `
+                <div class="music-info" onclick="window.open('${data.link}', '_blank'); triggerVibrate(40);">
+                    <i class="far fa-play-circle"></i>
+                    <div>
+                        <span style="font-weight:600; display:block; font-size:0.95rem;">${data.name}</span>
+                        <span style="font-size:0.7rem; color:#777;">بواسطة: ${data.sender}</span>
+                    </div>
+                </div>
+                ${data.sender === document.getElementById('user-role').value ? `<i class="fas fa-trash-alt" onclick="deleteMusicTrack('${child.key}')"></i>` : ''}
+            `;
+            list.appendChild(div);
+        });
+        list.scrollTop = list.scrollHeight;
+    });
+
+    function deleteMusicTrack(key) {
+        if(confirm("هل تريد حذف هذه الأغنية من القائمة؟")) {
+            triggerVibrate();
+            db.ref('music_box/' + key).remove();
+        }
+    }
+
+    const qs = ["أكثر شيء يسعدك في يومك؟", "أجمل ذكرى لنا حتى الآن؟", "إيه أكتر ذكرى من طفولتك لسه مأثرة فيك؟", "لو معاك تذكرة سفر لمكان واحد بس، هتختار تروح فين؟", "إيه هو يومك المثالي؟", "إيه أكتر كلمة بتفرحك لما تسمعها مني؟"];
+    function updateDailyQuestion() {
+        const index = Math.floor((new Date().setHours(0,0,0,0)/86400000)%qs.length);
+        document.getElementById('daily-q-text').innerText = qs[index];
+    }
+
+    function saveAns() {
+        triggerVibrate(); const r = document.getElementById('user-role').value; const a = document.getElementById('ans-in').value;
+        if(a.trim()) { db.ref('ans/'+r).set(a); alert("تم حفظ إجابتك السرية! 🔒"); document.getElementById('ans-in').value = ""; }
+    }
+
+    let selectedMsgKey = null, selectedMsgText = "", selectedMsgSender = "", replyToData = null;
+
+    document.getElementById('msg-input').addEventListener('input', () => {
+        const u = document.getElementById('user-role').value;
+        db.ref('typing/' + u).set({ isTyping: true, t: Date.now() });
+        clearTimeout(window.typingTimer);
+        window.typingTimer = setTimeout(() => db.ref('typing/' + u).set({ isTyping: false }), 2000);
+    });
+
+    db.ref('typing').on('value', snap => {
+        const data = snap.val(); const myRole = document.getElementById('user-role').value;
+        const otherRole = (myRole === "يوسف") ? "مريم" : "يوسف";
+        const statusDiv = document.getElementById('typing-status');
+        if (data && data[otherRole] && data[otherRole].isTyping) { statusDiv.innerText = `${otherRole} يكتب الآن...`; } else { statusDiv.innerText = ""; }
+    });
+
+    function updateSeenStatus() {
+        const u = document.getElementById('user-role').value;
+        db.ref('last_seen/' + u).set(Date.now());
+    }
+
+    function sendMsg() {
+        const u = document.getElementById('user-role').value; const input = document.getElementById('msg-input');
+        const btnIcon = document.querySelector('#moto-btn i'); const t = input.value;
+        if(t.trim()) { 
+            triggerVibrate(40); btnIcon.classList.add('moto-active'); 
+            db.ref('msgs').push().set({ s: u, t: t, time: Date.now(), reply: replyToData }); 
+            input.value = ""; cancelReply();
+            db.ref('typing/' + u).set({ isTyping: false });
+            setTimeout(() => btnIcon.classList.remove('moto-active'), 400); 
+        }
+    }
+
+    function addReact(emoji) { if (selectedMsgKey) { db.ref('msgs/' + selectedMsgKey + '/react').set(emoji); document.getElementById('custom-menu').style.display = 'none'; triggerVibrate(40); } }
+
+    function startReply() {
+        replyToData = { s: selectedMsgSender, t: selectedMsgText, key: selectedMsgKey };
+        const preview = document.getElementById('reply-preview');
+        document.getElementById('reply-preview-text').innerText = `رد على ${selectedMsgSender}: ${selectedMsgText.substring(0,25)}...`;
+        preview.style.display = 'block'; document.getElementById('custom-menu').style.display = 'none'; document.getElementById('msg-input').focus();
+    }
+
+    function cancelReply() { replyToData = null; document.getElementById('reply-preview').style.display = 'none'; }
+
+    function scrollToMessage(key) {
+        const target = document.querySelector(`[data-key="${key}"]`);
+        if(target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            target.style.transition = '0.5s';
+            target.style.background = '#00ff8844';
+            setTimeout(() => target.style.background = target.classList.contains('يوسف') ? 'rgba(0, 51, 26, 0.85)' : 'rgba(51, 0, 17, 0.85)', 1500);
+        }
+    }
+
+    db.ref('msgs').on('child_added', snap => {
+        const d = snap.val(); const myRole = document.getElementById('user-role').value;
+        if(d.s !== myRole) pushNotify("رسالة جديدة من " + d.s, d.t);
+        renderMessage(snap);
+    });
+    db.ref('msgs').on('child_changed', snap => { const msgDiv = document.querySelector(`[data-key="${snap.key}"]`); if (msgDiv) renderInnerMsg(msgDiv, snap.val()); });
+    db.ref('msgs').on('child_removed', snap => { const msgDiv = document.querySelector(`[data-key="${snap.key}"]`); if (msgDiv) msgDiv.remove(); });
+
+    function renderInnerMsg(div, d) {
+        let html = "";
+        if (d.reply) html += `<div class="reply-content" onclick="scrollToMessage('${d.reply.key || ''}')"><b>${d.reply.s}:</b> ${d.reply.t.substring(0,30)}</div>`;
+        html += `<b>${d.s}:</b><br>`;
+        if (d.t.match(/\.(jpeg|jpg|gif|png)$/) != null || d.t.startsWith('http')) { html += `<img src="${d.t}" style="width:100%; border-radius:10px; margin-top:5px;" onerror="this.outerHTML='${d.t}'">`; } else { html += d.t; }
+        if (d.react) html += `<div class="reaction-container">${d.react}</div>`;
+        div.innerHTML = html; updateSeenMarkers(div, d.time, d.s);
+    }
+
+    function renderMessage(snap) {
+        const d = snap.val(); const key = snap.key; const myRole = document.getElementById('user-role').value;
+        const div = document.createElement('div'); 
+        div.setAttribute('data-sender', d.s); 
+        div.className = `msg ${d.s === myRole ? 'يوسف' : 'مريم'}`;
+        div.setAttribute('data-key', key); div.setAttribute('data-time', d.time);
+        renderInnerMsg(div, d);
+        let timer;
+        div.ontouchstart = (e) => timer = setTimeout(() => handleMsgAction(key, d.t, e, d.s), 700);
+        div.ontouchend = () => clearTimeout(timer);
+        div.oncontextmenu = (e) => { e.preventDefault(); handleMsgAction(key, d.t, e, d.s); };
+        const cb = document.getElementById('chat-box'); cb.appendChild(div); cb.scrollTop = cb.scrollHeight;
+        if (d.s !== myRole) triggerVibrate(100);
+    }
+
+    function updateSeenMarkers(m, msgTime, sender) {
+        db.ref('last_seen').once('value', snap => {
+            const seenData = snap.val(); const otherRole = (sender === 'يوسف') ? 'مريم' : 'يوسف';
+            if(seenData && seenData[otherRole] && seenData[otherRole] > msgTime) {
+                if(!m.querySelector('.seen-status')) {
+                    const s = document.createElement('span'); s.className = 'seen-status';
+                    s.innerHTML = '<i class="fas fa-check-double" style="color:var(--hacker-green)"></i> شوهد';
+                    m.appendChild(s);
+                }
+            }
+        });
+    }
+
+    db.ref('last_seen').on('value', snap => {
+        const seenData = snap.val();
+        document.querySelectorAll('.msg').forEach(m => {
+            const msgTime = m.getAttribute('data-time'), sender = m.getAttribute('data-sender'), otherRole = (sender === 'يوسف') ? 'مريم' : 'يوسف';
+            if(seenData && seenData[otherRole] && seenData[otherRole] > msgTime) {
+                if(!m.querySelector('.seen-status')) {
+                    const s = document.createElement('span'); s.className = 'seen-status';
+                    s.innerHTML = '<i class="fas fa-check-double" style="color:var(--hacker-green)"></i> شوهد';
+                    m.appendChild(s);
+                }
+            }
+        });
+    });
+
+    function handleMsgAction(key, oldText, e, sender) {
+        selectedMsgKey = key; selectedMsgText = oldText; selectedMsgSender = sender;
+        const myRole = document.getElementById('user-role').value; const menu = document.getElementById('custom-menu');
+        document.getElementById('menu-edit').style.display = (sender === myRole) ? 'flex' : 'none';
+        document.getElementById('menu-delete').style.display = (sender === myRole) ? 'flex' : 'none';
+        menu.style.display = 'block';
+        let x = (e.pageX || (e.touches ? e.touches[0].pageX : 0)), y = (e.pageY || (e.touches ? e.touches[0].pageY : 0));
+        menu.style.left = Math.min(x, window.innerWidth - 160) + 'px'; menu.style.top = Math.min(y, window.innerHeight - 200) + 'px';
+        triggerVibrate(50);
+    }
+
+    window.onclick = (e) => { if(!e.target.closest('.msg') && !e.target.closest('#custom-menu')) document.getElementById('custom-menu').style.display = 'none'; };
+    document.getElementById('menu-edit').onclick = () => { const newT = prompt("عدل رسالتك:", selectedMsgText); if (newT && newT.trim() !== selectedMsgText) db.ref('msgs/' + selectedMsgKey).update({ t: newT }); };
+    document.getElementById('menu-delete').onclick = () => { if (confirm("حذف الرسالة نهائياً؟")) db.ref('msgs/' + selectedMsgKey).remove(); };
+
+    function initScrollReveal() {
+        window.addEventListener('scroll', revealOnScroll);
+        revealOnScroll();
+    }
+
+    function revealOnScroll() {
+        const cards = document.querySelectorAll('.card');
+        cards.forEach(card => {
+            const cardTop = card.getBoundingClientRect().top;
+            const windowHeight = window.innerHeight;
+            if (cardTop < windowHeight - 50) {
+                card.classList.add('revealed');
+            }
+        });
+    }
+</script>
+</body>
+</html>
+
         
         .menu-item {
             padding: 12px 20px; color: white; font-size: 0.9rem; cursor: pointer;
