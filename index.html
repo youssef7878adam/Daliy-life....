@@ -9,7 +9,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#08090b">
+    <meta name="theme-color" content="#05070f">
     
     <link rel="apple-touch-icon" href="love.jpg">
     <link rel="icon" href="love.jpg" type="image/jpeg">
@@ -24,15 +24,21 @@
         :root { 
             --hacker-green: #00ff88; 
             --nurse-red: #ff4d6d; 
-            --dark-bg: #08090b; 
-            --glass-bg: rgba(255, 255, 255, 0.03); 
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --glow-green: 0 0 20px rgba(0, 255, 136, 0.2);
-            --glow-red: 0 0 20px rgba(255, 77, 109, 0.2);
+            --dark-bg: #05070f; 
+            --glass-bg: rgba(15, 20, 35, 0.45); 
+            --glass-border: rgba(255, 255, 255, 0.12);
+            --glow-green: 0 0 20px rgba(0, 255, 136, 0.3);
+            --glow-red: 0 0 20px rgba(255, 77, 109, 0.3);
+            --nebula-color-1: rgba(0, 255, 136, 0.12);
+            --nebula-color-2: rgba(255, 77, 109, 0.12);
+        }
+
+        html {
+            scroll-behavior: smooth;
         }
 
         body { 
-            background: radial-gradient(circle at 20% 20%, #1a1c25 0%, var(--dark-bg) 50%);
+            background-color: var(--dark-bg);
             font-family: 'Cairo', sans-serif; 
             color: #e0e0e0; 
             margin: 0; 
@@ -43,22 +49,63 @@
             -webkit-user-select: none;
             -webkit-tap-highlight-color: transparent;
             transition: background 0.5s ease;
+            overflow-x: hidden;
+            position: relative;
         }
 
-        /* أنماط الخلفيات الشخصية المتاحة */
-        body.theme-default { background: radial-gradient(circle at 20% 20%, #1a1c25 0%, var(--dark-bg) 50%); }
-        body.theme-pure-dark { background: #050507; }
-        body.theme-hacker { background: radial-gradient(circle at bottom, #001a08 0%, #020203 80%); }
-        body.theme-nurse { background: radial-gradient(circle at top, #200408 0%, #050203 80%); }
-        body.theme-romantic { background: linear-gradient(135deg, #1f1115 0%, #0a0608 100%); }
+        /* Canvas النجوم والسديم */
+        #starfield-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            pointer-events: none;
+        }
+
+        #nebula-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+            background: radial-gradient(circle at 20% 30%, var(--nebula-color-1) 0%, transparent 60%),
+                        radial-gradient(circle at 80% 70%, var(--nebula-color-2) 0%, transparent 60%);
+            transition: background 1s ease;
+        }
+
+        /* الثيمات وتأثير السديم الكوني المتغير */
+        body.theme-default { 
+            --nebula-color-1: rgba(0, 255, 136, 0.12);
+            --nebula-color-2: rgba(255, 77, 109, 0.12);
+        }
+        body.theme-pure-dark { 
+            --nebula-color-1: rgba(255, 255, 255, 0.03);
+            --nebula-color-2: rgba(255, 255, 255, 0.03);
+        }
+        body.theme-hacker { 
+            --nebula-color-1: rgba(0, 255, 136, 0.25);
+            --nebula-color-2: rgba(0, 150, 80, 0.2);
+        }
+        body.theme-nurse { 
+            --nebula-color-1: rgba(255, 77, 109, 0.25);
+            --nebula-color-2: rgba(180, 20, 60, 0.2);
+        }
+        body.theme-romantic { 
+            --nebula-color-1: rgba(255, 105, 180, 0.2);
+            --nebula-color-2: rgba(138, 43, 226, 0.2);
+        }
 
         ::-webkit-scrollbar { display: none; }
 
         #hacker-screen { 
             position: fixed; inset: 0; background: #000; z-index: 20000; display: block; 
-            transition: transform 0.5s cubic-bezier(0.7, 0, 0.3, 1), opacity 0.4s ease-in;
+            transition: transform 0.6s cubic-bezier(0.7, 0, 0.3, 1), opacity 0.5s ease-in, filter 0.5s ease;
         }
-        #matrix-bg { position: absolute; top: 0; left: 0; opacity: 0.3; width: 100%; height: 100%; }
+        #matrix-bg { position: absolute; top: 0; left: 0; opacity: 0.35; width: 100%; height: 100%; }
         #term-box { position: relative; z-index: 20001; padding: 30px; font-family: monospace; color: var(--hacker-green); }
         .t-line { margin-bottom: 8px; font-size: 14px; text-shadow: 0 0 5px var(--hacker-green); }
         #p-bar-box { width: 180px; height: 3px; background: #020; margin: 20px 0; display: none; overflow: hidden; }
@@ -66,7 +113,7 @@
         #auth-area { display: none; align-items: center; margin-top: 15px; }
         #pass-input-term { background: transparent; border: none; color: #fff; font-size: 24px; outline: none; width: 120px; letter-spacing: 5px; font-family: monospace; font-weight: bold; }
 
-        .hacker-exit { transform: scale(0.1); opacity: 0; filter: blur(15px); pointer-events: none; }
+        .hacker-exit { transform: scale(0.05); opacity: 0; filter: blur(20px); pointer-events: none; }
         .hacker-shake { animation: terminalShake 0.15s infinite; filter: hue-rotate(90deg) contrast(1.5); }
 
         @keyframes terminalShake {
@@ -77,45 +124,218 @@
             100% { transform: translate(0px, 0px); }
         }
 
-        .container { max-width: 480px; margin: auto; display: none; padding: 20px; padding-bottom: 100px; }
-        #real-timer { text-align: center; margin-bottom: 20px; }
-        .days-big { font-size: 2.2rem; font-weight: 800; display: block; color: var(--hacker-green); text-shadow: var(--glow-green); }
-        .hms-small { font-size: 1.1rem; color: var(--nurse-red); font-weight: 600; letter-spacing: 1px; }
-        #distance-info { text-align: center; font-size: 0.8rem; color: #888; margin-top: -15px; margin-bottom: 15px; }
-        .tabs { display: flex; background: var(--glass-bg); border-radius: 20px; margin-bottom: 25px; padding: 6px; gap: 8px; border: 1px solid var(--glass-border); overflow-x: auto; scrollbar-width: none; }
-        .tab-btn { flex: 1; padding: 10px; border: none; background: transparent; color: #777; cursor: pointer; border-radius: 15px; font-weight: 800; transition: 0.3s; white-space: nowrap; }
-        .tab-btn.active { background: var(--nurse-red); color: white; box-shadow: var(--glow-red); }
-        .tab-btn.active.y-theme { background: var(--hacker-green); color: #000; box-shadow: var(--glow-green); }
-        .card { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 30px; padding: 22px; margin-bottom: 20px; backdrop-filter: blur(10px); }
-        .m-border { border-right: 5px solid var(--nurse-red); }
-        .y-border { border-right: 5px solid var(--hacker-green); }
-        .section { display: none; }
-        .section.active { display: block; animation: slideUp 0.4s ease-out; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .container { max-width: 480px; margin: auto; display: none; padding: 20px; padding-bottom: 120px; }
         
-        #chat-box, #wish-list, #dynamic-tasks-m, #dynamic-tasks-y, #memories-list, #music-list { height: 320px; overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 25px; padding: 15px; margin-bottom: 15px; display: flex; flex-direction: column; gap: 10px; border: 1px solid var(--glass-border); scroll-behavior: smooth; }
+        /* الهيدر والعدّاد الرئيسي بتصميم الزجاج الفضائي */
+        #real-timer { 
+            text-align: center; 
+            margin-bottom: 20px; 
+            background: rgba(10, 15, 30, 0.55);
+            border: 1px solid var(--glass-border);
+            border-radius: 25px;
+            padding: 18px 10px;
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+        .days-big { 
+            font-size: 2.4rem; 
+            font-weight: 800; 
+            display: block; 
+            color: var(--hacker-green); 
+            text-shadow: var(--glow-green); 
+            letter-spacing: 1px;
+        }
+        .hms-small { 
+            font-size: 1.2rem; 
+            color: var(--nurse-red); 
+            font-weight: 700; 
+            letter-spacing: 2px; 
+            text-shadow: var(--glow-red);
+        }
+        #distance-info { text-align: center; font-size: 0.85rem; color: #aaa; margin-top: -10px; margin-bottom: 20px; text-shadow: 0 0 5px rgba(255,255,255,0.2); }
+        
+        /* شريط التنقل السفلي العائم (Floating Bottom Navigation Capsule) مع السلاسة الممتازة */
+        .bottom-nav-container {
+            position: fixed;
+            bottom: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 30px);
+            max-width: 450px;
+            z-index: 9999;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .tabs { 
+            display: flex; 
+            background: rgba(10, 14, 26, 0.82); 
+            border-radius: 35px; 
+            padding: 6px 8px; 
+            gap: 4px; 
+            border: 1px solid rgba(255, 255, 255, 0.18); 
+            overflow-x: auto; 
+            scrollbar-width: none;
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+            justify-content: space-between;
+        }
+        
+        .tab-btn { 
+            flex: 1; 
+            padding: 10px 8px; 
+            border: none; 
+            background: transparent; 
+            color: #8a94a6; 
+            cursor: pointer; 
+            border-radius: 25px; 
+            font-weight: 800; 
+            font-size: 0.8rem;
+            transition: all 0.4s cubic-bezier(0.68, -0.6, 0.32, 1.6) !important; 
+            white-space: nowrap; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            position: relative;
+        }
+        .tab-btn i {
+            font-size: 1.15rem;
+            transition: transform 0.3s ease;
+        }
+        .tab-btn:active {
+            transform: scale(0.88);
+            filter: brightness(1.2);
+        }
+        .tab-btn.active { 
+            background: var(--nurse-red); 
+            color: white; 
+            box-shadow: var(--glow-red); 
+            transform: translateY(-2px) scale(1.05);
+            animation: pulseGlow 2s infinite alternate;
+        }
+        .tab-btn.active i {
+            transform: scale(1.1);
+        }
+        .tab-btn.active.y-theme { 
+            background: var(--hacker-green); 
+            color: #000; 
+            box-shadow: var(--glow-green); 
+            animation: pulseGlowGreen 2s infinite alternate;
+        }
+
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 10px rgba(255, 77, 109, 0.4); }
+            100% { box-shadow: 0 0 25px rgba(255, 77, 109, 0.9), 0 0 10px #fff; }
+        }
+
+        @keyframes pulseGlowGreen {
+            0% { box-shadow: 0 0 10px rgba(0, 255, 136, 0.4); }
+            100% { box-shadow: 0 0 25px rgba(0, 255, 136, 0.9), 0 0 10px #fff; }
+        }
+        
+        /* تصميم الكروت الزجاجية (Glassmorphic Cards) مع تأثير النيون المتحرك */
+        .card { 
+            position: relative;
+            background: rgba(12, 17, 29, 0.65) !important; 
+            border: 1px solid rgba(255, 255, 255, 0.12) !important; 
+            border-radius: 28px; 
+            padding: 22px; 
+            margin-bottom: 20px; 
+            backdrop-filter: blur(20px) saturate(180%) !important; 
+            -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            opacity: 0; 
+            transform: translateY(20px); 
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(transparent, var(--hacker-green), transparent 30%, var(--nurse-red), transparent 70%);
+            animation: rotateBorder 6s linear infinite;
+            z-index: -1;
+            opacity: 0.2;
+        }
+
+        .card::after {
+            content: '';
+            position: absolute;
+            inset: 1px;
+            background: rgba(10, 14, 26, 0.88);
+            border-radius: 27px;
+            z-index: -1;
+        }
+
+        @keyframes rotateBorder {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .card.revealed {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .m-border { border-right: 5px solid var(--nurse-red); box-shadow: -3px 0 15px rgba(255, 77, 109, 0.15); }
+        .y-border { border-right: 5px solid var(--hacker-green); box-shadow: -3px 0 15px rgba(0, 255, 136, 0.15); }
+        
+        .section { 
+            display: none; 
+            animation: fadeInTab 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .section.active { display: block; }
+        
+        @keyframes fadeInTab {
+            0% { 
+                opacity: 0; 
+                transform: translateY(30px) scale(0.92) rotateX(-10deg); 
+                filter: blur(8px);
+            }
+            100% { 
+                opacity: 1; 
+                transform: translateY(0) scale(1) rotateX(0deg); 
+                filter: blur(0px);
+            }
+        }
+
+        #chat-box, #wish-list, #dynamic-tasks-m, #dynamic-tasks-y, #memories-list, #music-list { 
+            height: 320px; 
+            overflow-y: auto; 
+            background: rgba(5, 8, 15, 0.45); 
+            border-radius: 22px; 
+            padding: 15px; 
+            margin-bottom: 15px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 10px; 
+            border: 1px solid var(--glass-border); 
+            scroll-behavior: smooth; 
+        }
         #memories-list { height: 400px; }
         .msg { padding: 10px 15px; border-radius: 18px; max-width: 85%; font-size: 0.95rem; line-height: 1.4; word-wrap: break-word; position: relative; }
-        .msg.يوسف { align-self: flex-end; background: #00331a; color: var(--hacker-green); border-bottom-right-radius: 4px; }
-        .msg.مريم { align-self: flex-start; background: #330011; color: var(--nurse-red); border-bottom-left-radius: 4px; }
+        .msg.يوسف { align-self: flex-end; background: rgba(0, 51, 26, 0.85); color: var(--hacker-green); border-bottom-right-radius: 4px; border: 1px solid rgba(0, 255, 136, 0.2); }
+        .msg.مريم { align-self: flex-start; background: rgba(51, 0, 17, 0.85); color: var(--nurse-red); border-bottom-left-radius: 4px; border: 1px solid rgba(255, 77, 109, 0.2); }
         
         .input-group { display: flex; gap: 8px; margin-top: 10px; }
-        .input-group input { flex: 1; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); color: white; padding: 12px 18px; border-radius: 15px; outline: none; font-family: 'Cairo'; }
+        .input-group input { flex: 1; background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); color: white; padding: 12px 18px; border-radius: 15px; outline: none; font-family: 'Cairo'; }
         
         #moto-btn { 
             width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; 
             border: none; background: var(--hacker-green) !important; box-shadow: 0 0 15px var(--hacker-green); cursor: pointer; 
+            transition: transform 0.2s;
         }
+        #moto-btn:active { transform: scale(0.9); }
         #moto-btn i { color: #000 !important; font-size: 1.4rem; }
         @keyframes motoLaunch { 0% { transform: translateX(0); opacity: 1; } 40% { transform: translateX(15px) scale(1.1); opacity: 1; } 100% { transform: translateX(-60px); opacity: 0; } }
         .moto-active { animation: motoLaunch 0.4s ease-in-out; }
-        
-        .nudge-btn { position: fixed; bottom: 20px; left: 20px; width: 65px; height: 65px; border-radius: 50%; border: none; background: var(--nurse-red); color: white; font-size: 1.5rem; cursor: pointer; z-index: 999; box-shadow: var(--glow-red); transition: transform 0.2s; }
-        .heart-pulse { animation: syncPulse 0.6s infinite !important; background: #ff0000 !important; box-shadow: 0 0 30px #ff0000 !important; }
-        
-        @keyframes syncPulse { 0% { transform: scale(1); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
-        @keyframes heartbeat { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
-        .nudge-btn:not(.heart-pulse) { animation: heartbeat 1.5s infinite; }
 
         #nudge-msg { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: white; color: #000; padding: 15px 30px; border-radius: 50px; font-weight: 800; transition: 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 10001; }
 
@@ -165,7 +385,6 @@
         .music-item i.fa-trash-alt { color: var(--nurse-red); cursor: pointer; transition: 0.2s; }
         .music-item i.fa-trash-alt:hover { transform: scale(1.2); }
 
-        /* ستايل أدوات التحكم في الخلفية الشخصية */
         .theme-picker-container { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 20px; background: var(--glass-bg); padding: 10px; border-radius: 20px; border: 1px solid var(--glass-border); }
         .theme-dot { width: 24px; height: 24px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
         .theme-dot.active { border-color: #fff; transform: scale(1.15); }
@@ -176,7 +395,11 @@
         .td-romantic { background: #1f1115; }
     </style>
 </head>
-<body>
+<body class="theme-default">
+
+<!-- خلفية السماء الكونية والنجوم -->
+<canvas id="starfield-canvas"></canvas>
+<div id="nebula-overlay"></div>
 
 <audio id="nudge-sound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
 <div id="nudge-msg">❤️ بيفكر فيكِ حالاً!</div>
@@ -196,19 +419,14 @@
 <div id="custom-menu">
     <div class="reactions-picker">
         <span class="react-btn" onclick="addReact('❤️')">❤️</span>
-        <span class="react-btn" onclick="addReact('😂')">😂</span>
-        <span class="react-btn" onclick="addReact('🔥')">🔥</span>
-        <span class="react-btn" onclick="addReact('👍')">👍</span>
+        <span class="react-btn" onclick="addReact('😹')">😹</span>
+        <span class="react-btn" onclick="addReact('💋')">💋</span>
+        <span class="react-btn" onclick="addReact('🎀')">🎀</span>
     </div>
     <div class="menu-item" onclick="startReply()"><i class="fas fa-reply"></i> رد</div>
     <div class="menu-item" id="menu-edit"><i class="fas fa-edit"></i> تعديل</div>
     <div class="menu-item delete-item" id="menu-delete"><i class="fas fa-trash"></i> حذف</div>
 </div>
-
-<button class="nudge-btn" id="floating-paw" 
-        onclick="window.open('https://youssef7878adam.github.io/Happy-massege-Mariomty/', '_blank'); triggerVibrate(50);">
-    <i class="fas fa-paw"></i>
-</button>
 
 <div class="container" id="main-content">
     <div id="real-timer">
@@ -216,17 +434,7 @@
         <span class="hms-small" id="hms-val">00:00:00</span>
     </div>
     <div id="distance-info">📍 جاري تحديد المسافة...</div>
-    <div class="tabs">
-        <button class="tab-btn active" onclick="showTab('mood', this)">المود</button>
-        <button class="tab-btn" onclick="showTab('tasks', this)">المهام</button>
-        <button class="tab-btn" onclick="showTab('wishes', this)">الأمنيات</button>
-        <button class="tab-btn" onclick="showTab('memories', this)">ذكرياتنا</button>
-        <button class="tab-btn" onclick="showTab('music', this)">الموسيقى</button>
-        <button class="tab-btn" onclick="showTab('questions', this)">سؤال</button>
-        <button class="tab-btn" onclick="showTab('chat', this)">الشات</button>
-    </div>
 
-    <!-- لوحة التحكم بالهوية والخلفية المخصصة غير المشتركة -->
     <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
         <div style="text-align: center;">
             <select id="user-role" onchange="syncRole()" style="background:var(--glass-bg); color:white; border:1px solid var(--glass-border); padding:10px; border-radius:15px; font-family:'Cairo'; width: 100%;">
@@ -305,6 +513,7 @@
     </div>
 
     <div id="questions" class="section"><div class="card" style="text-align: center;"><h3 id="daily-q-text" style="color:var(--hacker-green); margin-bottom:15px; min-height: 60px;">...</h3><textarea id="ans-in" style="width:100%; height:100px; background:rgba(0,0,0,0.3); border:1px solid var(--glass-border); color:white; border-radius:15px; padding:15px; font-family:'Cairo'; resize:none;" placeholder="إجابتك السرية..."></textarea><button class="tab-btn active y-theme" style="margin-top:10px; width:100%;" onclick="saveAns()">حفظ الإجابة</button></div></div>
+    
     <div id="chat" class="section">
         <div id="typing-status"></div>
         <div id="chat-box"></div>
@@ -319,25 +528,141 @@
     </div>
 </div>
 
+<!-- القائمة السفلية العائمة في الأسفل -->
+<div class="bottom-nav-container">
+    <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('mood', this)"><i class="fas fa-mask"></i>المود</button>
+        <button class="tab-btn" onclick="showTab('tasks', this)"><i class="fas fa-tasks"></i>المهام</button>
+        <button class="tab-btn" onclick="showTab('wishes', this)"><i class="fas fa-magic"></i>الأمنيات</button>
+        <button class="tab-btn" onclick="showTab('memories', this)"><i class="fas fa-camera-retro"></i>الذكريات</button>
+        <button class="tab-btn" onclick="showTab('music', this)"><i class="fas fa-music"></i>الموسيقى</button>
+        <button class="tab-btn" onclick="showTab('questions', this)"><i class="fas fa-question-circle"></i>سؤال</button>
+        <button class="tab-btn" onclick="showTab('chat', this)"><i class="fas fa-comments"></i>الشات</button>
+    </div>
+</div>
+
 <script>
+    // --- أنيميشن القلوب والنجوم التفاعلية عند اللمس على الشاشة ---
+    document.addEventListener('click', function(e) {
+        if(e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'SELECT' && e.target.tagName !== 'TEXTAREA') {
+            createParticle(e.clientX, e.clientY);
+        }
+    });
+
+    function createParticle(x, y) {
+        const particle = document.createElement('div');
+        const items = ['❤️', '✨', '💖', '⚡', '🌸'];
+        particle.innerHTML = items[Math.floor(Math.random() * items.length)];
+        particle.style.cssText = `
+            position: fixed;
+            left: ${x}px;
+            top: ${y}px;
+            pointer-events: none;
+            font-size: ${Math.random() * 12 + 16}px;
+            z-index: 99999;
+            transform: translate(-50%, -50%) scale(0.5);
+            transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 1;
+            filter: drop-shadow(0 0 8px rgba(0,255,136,0.8));
+        `;
+        document.body.appendChild(particle);
+
+        requestAnimationFrame(() => {
+            particle.style.transform = `translate(-50%, -${Math.random() * 80 + 50}px) scale(${Math.random() * 0.8 + 1})`;
+            particle.style.opacity = '0';
+        });
+
+        setTimeout(() => particle.remove(), 850);
+    }
+
+    // --- سكريبت خلفية السماء والنجوم والشهب الكونية التفاعلية ---
+    const starCanvas = document.getElementById('starfield-canvas');
+    const starCtx = starCanvas.getContext('2d');
+    let stars = [];
+    let shootingStars = [];
+
+    function resizeStarCanvas() {
+        starCanvas.width = window.innerWidth;
+        starCanvas.height = window.innerHeight;
+        initStars();
+    }
+
+    function initStars() {
+        stars = [];
+        const count = Math.floor((starCanvas.width * starCanvas.height) / 1200);
+        for (let i = 0; i < count; i++) {
+            stars.push({
+                x: Math.random() * starCanvas.width,
+                y: Math.random() * starCanvas.height,
+                size: Math.random() * 1.8 + 0.2,
+                alpha: Math.random(),
+                speed: Math.random() * 0.02 + 0.005,
+                dir: Math.random() > 0.5 ? 1 : -1
+            });
+        }
+    }
+
+    function addShootingStar() {
+        if (Math.random() < 0.03 && shootingStars.length < 5) {
+            shootingStars.push({
+                x: Math.random() * starCanvas.width,
+                y: Math.random() * (starCanvas.height / 2),
+                len: Math.random() * 90 + 50,
+                speed: Math.random() * 12 + 7,
+                size: Math.random() * 1.8 + 0.6,
+                alpha: 1
+            });
+        }
+    }
+
+    function drawStarfield() {
+        starCtx.clearRect(0, 0, starCanvas.width, starCanvas.height);
+        
+        stars.forEach(star => {
+            star.alpha += star.speed * star.dir;
+            if (star.alpha >= 1 || star.alpha <= 0.2) star.dir *= -1;
+
+            starCtx.fillStyle = `rgba(255, 255, 255, ${star.alpha})`;
+            starCtx.beginPath();
+            starCtx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+            starCtx.fill();
+        });
+
+        shootingStars.forEach((sStar, index) => {
+            sStar.x -= sStar.speed;
+            sStar.y += sStar.speed * 0.7;
+            sStar.alpha -= 0.015;
+
+            if (sStar.alpha <= 0) {
+                shootingStars.splice(index, 1);
+            } else {
+                starCtx.strokeStyle = `rgba(255, 255, 255, ${sStar.alpha})`;
+                starCtx.lineWidth = sStar.size;
+                starCtx.beginPath();
+                starCtx.moveTo(sStar.x, sStar.y);
+                starCtx.lineTo(sStar.x + sStar.len, sStar.y - sStar.len * 0.7);
+                starCtx.stroke();
+            }
+        });
+
+        addShootingStar();
+        requestAnimationFrame(drawStarfield);
+    }
+
+    window.addEventListener('resize', resizeStarCanvas);
+    resizeStarCanvas();
+    drawStarfield();
+
+    // --- أكواد Firebase والتطبيق الأصلية ---
     const firebaseConfig = { databaseURL: "https://youssef-mariam-default-rtdb.firebaseio.com/" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // --- تخصيص خلفية الثيم الشخصي (محلياً للموبايل الحالي فقط) ---
     function changePersonalTheme(themeClassName, dotElement) {
         triggerVibrate(30);
-        
-        // إزالة كل كلاسات الثيم القديمة من الـ Body
         document.body.classList.remove('theme-default', 'theme-pure-dark', 'theme-hacker', 'theme-nurse', 'theme-romantic');
-        
-        // إضافة الكلاس الجديد
         document.body.classList.add(themeClassName);
-        
-        // حفظ الاختيار محلياً على المتصفح
         localStorage.setItem('myPersonalTheme', themeClassName);
-        
-        // تحديث مظهر دوائر الاختيار
         document.querySelectorAll('.theme-dot').forEach(dot => dot.classList.remove('active'));
         if (dotElement) {
             dotElement.classList.add('active');
@@ -347,7 +672,6 @@
         }
     }
 
-    // استعادة الثيم المحفوظ عند فتح التطبيق
     function loadSavedTheme() {
         const savedTheme = localStorage.getItem('myPersonalTheme');
         if (savedTheme) {
@@ -355,7 +679,6 @@
         }
     }
 
-    // --- نظام الإشعارات ---
     function initNotifications() {
         if ("Notification" in window) {
             Notification.requestPermission();
@@ -368,7 +691,6 @@
         }
     }
 
-    // --- Firebase Listeners ---
     let pulseInterval;
     function startPulse() {
         const role = document.getElementById('user-role').value;
@@ -384,16 +706,13 @@
 
     db.ref('heart_sync').on('value', snap => {
         const d = snap.val();
-        const heartBtn = document.getElementById('floating-heart');
         if (d && d.active) {
-            heartBtn.classList.add('heart-pulse');
             if (d.sender !== document.getElementById('user-role').value) {
                 triggerVibrate([100, 50, 100]);
             }
-        } else { heartBtn.classList.remove('heart-pulse'); }
+        }
     });
 
-    // --- Terminal & Matrix ---
     const logContainer = document.getElementById('log-c');
     const termLines = ["Initializing System...", "Loading Neural Network...", "Bypassing Firewall...", "Access Granted."];
     let currentLine = 0;
@@ -419,36 +738,44 @@
     }
     setInterval(drawMatrix, 40);
 
-    // --- Authentication ---
     document.getElementById('pass-input-term').addEventListener('input', (e) => {
         let val = e.target.value.trim().replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d));
         if (val === "1212") {
-            const screen = document.getElementById('hacker-screen'); triggerVibrate([100, 50, 100]);
-            screen.classList.add('hacker-shake');
+            const screen = document.getElementById('hacker-screen'); 
+            triggerVibrate([50, 30, 50, 30, 100]);
             initNotifications();
+            
+            screen.style.filter = "hue-rotate(180deg) invert(1) contrast(2)";
+            
             setTimeout(() => {
-                screen.classList.remove('hacker-shake'); screen.classList.add('hacker-exit');
+                screen.style.transition = "all 0.6s cubic-bezier(0.7, 0, 0.3, 1)";
+                screen.style.transform = "scale(1.2) rotate(2deg)";
+                screen.style.opacity = "0";
+                screen.style.filter = "blur(30px)";
+                
                 setTimeout(() => { 
                     screen.style.display = 'none'; 
                     document.getElementById('main-content').style.display = 'block'; 
                     const savedRole = localStorage.getItem('myUserRole');
                     if(savedRole) document.getElementById('user-role').value = savedRole;
                     syncRole(); loadSavedTheme(); updateDailyQuestion(); startLocationTracking(); 
+                    initScrollReveal();
                 }, 400);
-            }, 300);
+            }, 250);
         }
     });
 
-    // --- Sensors & Shake ---
     let lastShake = 0;
     if (window.DeviceMotionEvent) {
         window.addEventListener('devicemotion', (e) => {
             let acc = e.accelerationIncludingGravity;
-            let totalAcc = Math.abs(acc.x) + Math.abs(acc.y) + Math.abs(acc.z);
-            if (totalAcc > 25 && (Date.now() - lastShake > 2000)) {
-                lastShake = Date.now();
-                const role = document.getElementById('user-role').value;
-                db.ref('remote_shake').set({ s: role, t: Date.now() });
+            if(acc) {
+                let totalAcc = Math.abs(acc.x) + Math.abs(acc.y) + Math.abs(acc.z);
+                if (totalAcc > 25 && (Date.now() - lastShake > 2000)) {
+                    lastShake = Date.now();
+                    const role = document.getElementById('user-role').value;
+                    db.ref('remote_shake').set({ s: role, t: Date.now() });
+                }
             }
         });
     }
@@ -496,15 +823,13 @@
         document.getElementById('y-to-m-ctrl').style.display = (role === "يوسف") ? "flex" : "none";
         document.getElementById('m-to-y-ctrl').style.display = (role === "مريم") ? "flex" : "none";
         
-        const messages = document.querySelectorAll('.msg');
-        messages.forEach(msgDiv => {
+        document.querySelectorAll('.msg').forEach(msgDiv => {
             const sender = msgDiv.getAttribute('data-sender');
             msgDiv.className = `msg ${sender === role ? 'يوسف' : 'مريم'}`;
         });
 
         const activeTab = document.querySelector('.tab-btn.active');
         if(activeTab) { if(role === "يوسف") activeTab.classList.add('y-theme'); else activeTab.classList.remove('y-theme'); }
-        document.getElementById('floating-paw').style.background = (role === "يوسف") ? "var(--hacker-green)" : "var(--nurse-red)";
 
         if(document.getElementById('chat').classList.contains('active')) updateSeenStatus();
     }
@@ -513,6 +838,9 @@
         triggerVibrate(); document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active', 'y-theme'));
         document.getElementById(id).classList.add('active'); btn.classList.add('active'); syncRole();
+        
+        setTimeout(revealOnScroll, 50);
+
         if(id === 'chat') { 
             const cb = document.getElementById('chat-box'); 
             setTimeout(() => cb.scrollTop = cb.scrollHeight, 100); 
@@ -520,7 +848,6 @@
         }
     }
 
-    // --- عداد الوقت الدقيق ---
     const start = new Date("2025-04-16T00:00:00");
     setInterval(() => {
         const now = new Date();
@@ -615,7 +942,6 @@
         db.ref('wishes/'+k).update({ d: !st });
     }
 
-    // --- نظام صندوق الذكريات المطور ---
     let base64ImageString = "";
 
     function handleFileSelect(input) {
@@ -690,7 +1016,6 @@
 
     function deleteMemory(key) { if(confirm("هل تريد حذف هذه الذكرى نهائياً؟")) { triggerVibrate(); db.ref('memories/'+key).remove(); } }
 
-    // --- وظائف صندوق الموسيقى المشترك ---
     function addMusicTrack() {
         triggerVibrate();
         const name = document.getElementById('music-name').value.trim();
@@ -719,7 +1044,6 @@
     db.ref('music_box').on('value', snap => {
         const list = document.getElementById('music-list');
         list.innerHTML = "";
-        const myRole = document.getElementById('user-role').value;
         snap.forEach(child => {
             const data = child.val();
             const div = document.createElement('div');
@@ -732,7 +1056,7 @@
                         <span style="font-size:0.7rem; color:#777;">بواسطة: ${data.sender}</span>
                     </div>
                 </div>
-                ${data.sender === myRole ? `<i class="fas fa-trash-alt" onclick="deleteMusicTrack('${child.key}')"></i>` : ''}
+                ${data.sender === document.getElementById('user-role').value ? `<i class="fas fa-trash-alt" onclick="deleteMusicTrack('${child.key}')"></i>` : ''}
             `;
             list.appendChild(div);
         });
@@ -757,7 +1081,6 @@
         if(a.trim()) { db.ref('ans/'+r).set(a); alert("تم حفظ إجابتك السرية! 🔒"); document.getElementById('ans-in').value = ""; }
     }
 
-    // --- Chat System المطور ---
     let selectedMsgKey = null, selectedMsgText = "", selectedMsgSender = "", replyToData = null;
 
     document.getElementById('msg-input').addEventListener('input', () => {
@@ -808,7 +1131,7 @@
             target.scrollIntoView({ behavior: 'smooth', block: 'center' });
             target.style.transition = '0.5s';
             target.style.background = '#00ff8844';
-            setTimeout(() => target.style.background = target.classList.contains('يوسف') ? '#00331a' : '#330011', 1500);
+            setTimeout(() => target.style.background = target.classList.contains('يوسف') ? 'rgba(0, 51, 26, 0.85)' : 'rgba(51, 0, 17, 0.85)', 1500);
         }
     }
 
@@ -817,7 +1140,7 @@
         if(d.s !== myRole) pushNotify("رسالة جديدة من " + d.s, d.t);
         renderMessage(snap);
     });
-    db.ref('msgs').on('child_changed', snap => { const msgDiv = document.querySelector(`[data-key="${snap.key}"]`); if (msgDiv) renderInnerMsg(snap.val()); });
+    db.ref('msgs').on('child_changed', snap => { const msgDiv = document.querySelector(`[data-key="${snap.key}"]`); if (msgDiv) renderInnerMsg(msgDiv, snap.val()); });
     db.ref('msgs').on('child_removed', snap => { const msgDiv = document.querySelector(`[data-key="${snap.key}"]`); if (msgDiv) msgDiv.remove(); });
 
     function renderInnerMsg(div, d) {
@@ -860,7 +1183,7 @@
     db.ref('last_seen').on('value', snap => {
         const seenData = snap.val();
         document.querySelectorAll('.msg').forEach(m => {
-            const msgTime = m.getAttribute('data-time'), sender = m.getAttribute('data-sender'), otherRole = (sender === 'يوسف') ? 'مريم' : 'يوسف';
+            const msgTime = m.getAttribute('data-time'), sender = m.getAttribute('data-sender'), otherRole = (sender === 'يوسف') ? 'مريم' : 'java';
             if(seenData && seenData[otherRole] && seenData[otherRole] > msgTime) {
                 if(!m.querySelector('.seen-status')) {
                     const s = document.createElement('span'); s.className = 'seen-status';
@@ -885,6 +1208,22 @@
     window.onclick = (e) => { if(!e.target.closest('.msg') && !e.target.closest('#custom-menu')) document.getElementById('custom-menu').style.display = 'none'; };
     document.getElementById('menu-edit').onclick = () => { const newT = prompt("عدل رسالتك:", selectedMsgText); if (newT && newT.trim() !== selectedMsgText) db.ref('msgs/' + selectedMsgKey).update({ t: newT }); };
     document.getElementById('menu-delete').onclick = () => { if (confirm("حذف الرسالة نهائياً؟")) db.ref('msgs/' + selectedMsgKey).remove(); };
+
+    function initScrollReveal() {
+        window.addEventListener('scroll', revealOnScroll);
+        revealOnScroll();
+    }
+
+    function revealOnScroll() {
+        const cards = document.querySelectorAll('.card');
+        cards.forEach(card => {
+            const cardTop = card.getBoundingClientRect().top;
+            const windowHeight = window.innerHeight;
+            if (cardTop < windowHeight - 50) {
+                card.classList.add('revealed');
+            }
+        });
+    }
 </script>
 </body>
 </html>
